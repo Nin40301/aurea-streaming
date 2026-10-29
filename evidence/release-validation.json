@@ -1,0 +1,28 @@
+{
+  "version": "1.0.1",
+  "platform": "Windows x64",
+  "installedVersion": "1.0.1",
+  "installerExitCode": 0,
+  "unitIntegrationTestsPassed": 14,
+  "installedE2E": {
+    "startTime": "2026-10-28T23:14:08.130Z",
+    "duration": 33014.867000000006,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "installedAsarSha256": "b2f48d45138616490b92b9e592e8828809fc5c4c129e220781286e909705b951",
+  "artifacts": [
+    {
+      "name": "Aurea-1.0.1-Setup.exe",
+      "bytes": 178972672,
+      "sha256": "4647c85a27b2a6f3b52432ca7c14db6db5f7c5b2bf081b231a63170ca66f05e9"
+    },
+    {
+      "name": "Aurea-1.0.1-Windows-x64.zip",
+      "bytes": 182137179,
+      "sha256": "24345dbefd5de44b1a004c212327dad36b7ebde5094ffd84223da7c1f96ebd17"
+    }
+  ]
+}

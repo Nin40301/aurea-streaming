@@ -1,0 +1,57 @@
+{
+  "name": "aurea",
+  "productName": "Aurea",
+  "version": "2.0.0",
+  "description": "Cinema aberto, sua biblioteca e seus add-ons em um desktop Windows.",
+  "author": "Aurea Contributors",
+  "license": "MIT",
+  "main": ".vite/build/main.js",
+  "scripts": {
+    "start": "npm run build && electron .",
+    "dev": "npm run start",
+    "build": "vite build --config vite.main.config.mts && vite build --config vite.preload.config.mts && vite build --config vite.renderer.config.mts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests scripts",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "package": "npm run build && electron-forge package --platform=win32 --arch=x64",
+    "make": "npm run build && electron-forge make --platform=win32 --arch=x64",
+    "demo:addon": "node --experimental-strip-types scripts/demo-server.ts",
+    "format": "prettier --write src tests scripts *.mts *.json *.cjs *.mjs",
+    "format:check": "prettier --check src tests scripts *.mts *.json *.cjs *.mjs",
+    "setup:runtime": "node scripts/prepare-runtime.mjs",
+    "licenses": "node scripts/licenses.mjs",
+    "premake": "npm run setup:runtime && npm run licenses",
+    "prepackage": "npm run setup:runtime && npm run licenses"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "1.0.1",
+    "hls.js": "1.7.4",
+    "lucide-react": "1.63.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "8.0.1",
+    "@electron-forge/maker-squirrel": "8.0.1",
+    "@electron-forge/maker-zip": "8.0.1",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/electron-squirrel-startup": "1.0.2",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "electron": "45.1.0",
+    "eslint": "10.13.0",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

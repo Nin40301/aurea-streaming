@@ -1,0 +1,28 @@
+{
+  "evidence_id": "ev_f2a3de9e94c4d657fc27ad25612d56b491758435e5ce0af41a301fc6364a657d",
+  "operation": "inspect_pe_resources",
+  "provider": {
+    "id": "rea-pe-resources",
+    "name": "REA PE resource parser",
+    "version": "1"
+  },
+  "authority": "shipped-artifact",
+  "confidence": "observed",
+  "artifact": {
+    "path": "${USERPROFILE}\\Documents\\Codex\\2026-10-28\\new-chat\\outputs\\Aurea\\out\\Aurea-win32-x64\\Aurea.exe",
+    "sha256": "801aaa0a4ca9cadf67163ffd12caf4a49992fe0214105ffbe2bac6180ac8dd11",
+    "bytes": 249798656
+  },
+  "format": "pe32-plus",
+  "coverage": {
+    "status": "complete",
+    "examined_entries": 105,
+    "resources": 49
+  },
+  "icon_groups": 1,
+  "limitations": [
+    "Static PE32/PE32+ type/name/language resource inventory; payloads other than RT_GROUP_ICON remain opaque.",
+    "Icon candidates are resource-table relationships. Language fallback, image decoding and actual shell/window loading are not observed.",
+    "Exact shared byte ranges are retained; non-identical overlapping resource structures or payloads are rejected."
+  ]
+}
