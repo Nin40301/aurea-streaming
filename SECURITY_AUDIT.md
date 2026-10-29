@@ -7,9 +7,9 @@ Escopo: todas as 152 entradas versionadas no commit, todas as branches/tags apó
 
 ## Conclusão
 
-**Não apto para publicação pública no estado atual.** Foram encontrados dados de ambiente pessoal em sete arquivos JSON de evidência. Eles registram caminhos absolutos locais e o nome associado ao perfil da máquina. Esses dados estão no commit inicial, portanto apagar os arquivos apenas do working tree ou adicioná-los ao `.gitignore` não removeria a exposição do histórico.
+A auditoria inicial encontrou paths pessoais em sete JSON. Os arquivos foram sanitizados e o único commit inicial foi reescrito. O novo root sanitizado `57d0896074595c9c21e803cf2edce1c93bd45041` substituiu o root antigo na única branch publicada (`main`) via `--force-with-lease` condicionado ao hash esperado. A branch do repositório continua privada; não foi alterada sua visibilidade.
 
-O repositório permanece privado. Esta auditoria não alterou sua visibilidade, não fez push e não reescreveu o histórico.
+A revisão final do novo histórico alcançável encontrou zero paths pessoais nos blobs e zero findings de segredos com Gitleaks. A atribuição do autor do commit foi preservada conforme solicitado e é a única consideração de privacidade remanescente: o nome de perfil associado à identidade Git ficará visível se o repositório for público. A varredura não encontrou e-mail pessoal.
 
 ## Resultados
 
@@ -24,7 +24,7 @@ O repositório permanece privado. Esta auditoria não alterou sua visibilidade, 
 
 ### Privacidade e dados pessoais
 
-Sete blobs versionados em `evidence/` contêm caminhos absolutos do Windows e o nome de usuário local. Os arquivos afetados são:
+A auditoria inicial encontrou caminhos absolutos do Windows e o nome de usuário local nos sete JSON a seguir. Eles foram sanitizados antes da reescrita do histórico:
 
 - `evidence/e2e-installed-results.json`
 - `evidence/e2e-results.json`
@@ -40,10 +40,10 @@ O autor do único commit tem um nome de perfil e um endereço `users.noreply.git
 
 ### Histórico Git e branches
 
-- Após fetch, foram encontradas apenas as branches locais `main` e `codex/aurea-2.0-continuation`, ambas apontando para o commit inicial; remotamente existe apenas `origin/main` e `origin/HEAD`.
-- Não há tags nem commits adicionais. O histórico contém somente um commit raiz, que adicionou os 152 arquivos; não há arquivos excluídos posteriormente no histórico disponível.
-- A branch `codex/aurea-2.0-continuation` é local e não foi enviada durante a auditoria.
-- Os dados pessoais de `evidence/` estão no commit raiz compartilhado com o remoto privado. Uma correção que remova os dados do histórico exige substituir esse commit e atualizar `main` remoto; um commit corretivo comum ainda deixaria os valores no histórico.
+- Antes da reescrita havia somente o root original, com 152 arquivos; as refs remotas eram `main` e `origin/HEAD`, sem tags e sem PRs.
+- Esse root antigo foi substituído na branch remota `main`. O novo histórico publicado contém o root sanitizado e o commit de registro desta auditoria; não há arquivos excluídos no histórico atualmente alcançável.
+- A branch local `codex/aurea-2.0-continuation` foi preservada e sincronizada com a nova história. Não foi publicada.
+- O backup local fora do repositório conserva refs e patch antigos para recuperação; não foi enviado ao GitHub.
 
 ### Screenshots e binários
 
@@ -64,20 +64,13 @@ O autor do único commit tem um nome de perfil e um endereço `users.noreply.git
 - Não foram detectados hosts corporativos, URLs de serviços privados, senhas ou dados de infraestrutura. O servidor local demonstrativo usa loopback (`127.0.0.1`) de forma intencional e documentada.
 - Configurações Electron, CSP e limites do adaptador de add-ons não contêm credenciais. O design documenta que URLs/manifests e histórico ficam em texto no SQLite local; nenhum banco está incluído no repositório.
 
-## Correção necessária antes de tornar público
+## Correções e riscos restantes
 
-1. Remover os caminhos pessoais e o nome local dos sete JSON, substituindo-os por paths relativos e identificadores neutros; ou remover esses artefatos se não forem necessários. Regenerar os JSON de forma que não serializem paths de `C:\Users\...`.
-2. Sanitizar o histórico Git inteiro, incluindo o commit raiz. Como o remoto privado também contém os dados, antes de tornar público substituir o root commit por uma versão sanitizada e atualizar `main` com a reescrita autorizada. Confirmar novamente por Gitleaks e por busca de paths tanto no tree quanto em todos os commits.
-3. Decidir se o nome do autor do commit inicial deve ser mantido ou trocado por um identificador que o usuário aceite publicar; o e-mail já é `users.noreply.github.com`.
-4. Só então considerar a alteração manual de visibilidade. Esta auditoria não está autorizada a alterar a visibilidade.
-
-## Resumo de risco
-
-- **Bloqueador para publicação pública:** paths absolutos e nome do perfil nos sete relatórios históricos de `evidence/`.
-- **Consideração de privacidade:** nome do autor do commit visível no histórico.
-- **Sem findings de segredo:** Gitleaks não detectou tokens/credenciais/chaves.
-- **Risco de licença identificado:** nenhum incompatível aparente; preservar as atribuições CC BY 3.0 e a descrição de conversões/recortes.
-- **Visibilidade do GitHub:** permanece privada.
+- Os sete JSON foram sanitizados com marcadores neutros, mantendo estrutura e validade.
+- O root antigo foi substituído na única branch remota, e verificações posteriores confirmaram ausência de dados pessoais no novo histórico alcançável.
+- A identidade de autor/committer foi preservada como solicitado. O nome de perfil continua visível como atribuição Git; decidir se esse nome pode aparecer publicamente. O endereço é `users.noreply.github.com`, não um e-mail pessoal.
+- Nenhum incompatibilidade de licença foi identificada; manter créditos CC BY 3.0 e a descrição das conversões/recortes.
+- A visibilidade do GitHub permanece privada e não foi alterada.
 
 ## Revalidação após sanitização local — 2026-10-28
 
@@ -91,12 +84,12 @@ A verificação dos arquivos versionados no working tree não encontrou caminhos
 
 - Gitleaks 8.30.1 `dir`, com redação habilitada: 0 findings nos arquivos locais examinados.
 - Gitleaks 8.30.1 `git`: 0 findings de segredos no commit histórico alcançável.
-- Varredura PII personalizada: confirmou que os sete blobs do commit raiz ainda contêm os dados originais. O HEAD ainda é o commit inicial e a cópia remota `origin/main` não foi alterada.
+- Varredura PII personalizada no root sanitizado e em todas as refs publicadas: nenhum caminho absoluto local ou nome local encontrado. O blob antigo não está alcançável pelas refs publicadas atuais.
 - JSON: os sete arquivos corrigidos continuam válidos.
 - `npm test`: 14 testes aprovados.
 - `npm run typecheck`: aprovado.
 
-**Importante:** a varredura Gitleaks de `git` não detecta dados pessoais. Seu resultado zero não significa que o histórico esteja sanitizado. O histórico deve ser reescrito e revarrido antes de tornar público.
+**Importante:** Gitleaks detecta segredos, não todos os dados pessoais. Por isso também foi executado scanner PII sobre cada blob alcançável pelas refs. A primeira varredura Gitleaks cobriu o root antigo; as revalidações posteriores cobriram o novo histórico sanitizado.
 
 ### Identidade do commit
 
@@ -109,20 +102,19 @@ O commit raiz expõe somente um nome de perfil (não um endereço pessoal) e um 
 - A página oficial Creative Commons explica que CC BY 3.0 permite redistribuição e adaptação, inclusive comercial, desde que se dê atribuição apropriada, link da licença e indicação de alterações: https://creativecommons.org/licenses/by/3.0/us/ .
 - Os avisos versionados identificam autores/titulares, fontes, link de licença e conversões HLS/recortes. A redistribuição dos assets incluídos parece compatível com esses termos, sujeita à preservação dos avisos e créditos ao publicar/distribuir. A presente verificação não é parecer jurídico nem prova criptográfica da procedência de cada arquivo.
 
-### Plano de reescrita do histórico — aguarda autorização
+### Reescrita do histórico executada
 
-O remoto tem apenas `main`; não existem branches remotas de colaboradores nem tags. A branch local `codex/aurea-2.0-continuation` está no commit raiz antigo e contém as correções não commitadas. A reescrita exige atualizar o único ref remoto principal e muda o hash do commit raiz.
+- Backup local das refs em bundle Git, patch binário das mudanças de working tree e cópia do relatório criado e verificado fora do repositório publicado. O backup contém deliberadamente a cópia privada do histórico antigo para recuperação; não foi enviado.
+- Antes da operação, `origin/main` era `818b36e2214d007035f3c4d0aeee7b6a1719c3ed`. O remoto tinha somente `main`, zero tags e nenhum pull request. As branches locais `main` e `codex/aurea-2.0-continuation` apontavam para o root antigo.
+- Foi criado novo root `57d0896074595c9c21e803cf2edce1c93bd45041`, contendo os sete JSON sanitizados e este relatório; a identidade Git (nome e email) foi preservada. Árvore validada antes da atualização remota.
+- Imediatamente antes do force push, o hash remoto ainda correspondia ao esperado e o conjunto de refs remotas permanecia inalterado. `--force-with-lease` atualizou somente `main`. Não houve divergência nem perda de alterações.
+- As branches locais `main` e `codex/aurea-2.0-continuation` foram sincronizadas com o novo root; o working tree ficou limpo após o registro final desta auditoria. O remoto continua privado.
+- Consumidores que já clonaram o remoto precisam buscar a branch atualizada e fazer reset/reclone/rebase porque o hash raiz mudou. O backup bundle local, fora do repositório publicado, conserva as refs e objetos antigos para recuperação. Reflogs/objetos antigos também podem permanecer no `.git` local até sua expiração; nenhum desses refs locais foi enviado ao GitHub.
 
-Plano aprovado pelo usuário; a criação do backup local já foi concluída. A reescrita remota ainda está pendente nesta etapa:
-1. Salvar os hashes atuais de `origin/main` e das branches locais e criar refs/backup locais verificáveis; manter intacta a cópia atual dos arquivos e as correções pendentes.
-2. Validar JSON, procurar paths/nome em todos os blobs da árvore limpa e confirmar os créditos/licenças antes de criar o novo root.
-3. Construir um root commit sanitizado com a mesma árvore/código exceto pelos sete JSON e pelo relatório, preservando exatamente o autor original por padrão. Não mudar nome/email do commit sem autorização adicional.
-4. Verificar o novo histórico completo com Gitleaks e scanner PII; então fazer push apenas de `main` usando `--force-with-lease` condicionado ao hash remoto antigo verificado. Não alterar a visibilidade.
-5. Atualizar a branch de trabalho local por rebase sobre o novo root, preservar o relatório e correções; conferir hashes, status e árvore remota.
-6. Informar que consumidores que já clonaram o remoto precisarão fazer fetch e reset/reclone/rebase, pois o hash raiz mudará. Atualmente há uma única branch remota `main`; a branch `codex/aurea-2.0-continuation` existe somente neste clone.
+## Verificação final e decisão de publicação
 
-Autorização para a reescrita e atualização com `--force-with-lease` foi concedida. O backup local das refs e das alterações foi criado e verificado fora do repositório publicado. Ainda não houve commit sanitizado, push, reescrita de refs remotas nem mudança de visibilidade.
+Gitleaks 8.30.1 retornou zero findings para os arquivos atuais e para o histórico Git alcançável. A varredura PII percorreu todos os blobs alcançáveis pelas refs atuais: nenhum path local ou nome pessoal foi encontrado. Sete JSON seguem válidos; `npm test` aprovou 14 testes e `npm run typecheck` passou.
 
-## Decisão atual de publicação
+Não foram identificados bloqueadores de segredos, paths, assets ou licença para publicação pública. Os assets de demonstração são declarados CC BY 3.0 com atribuição, links e indicação das conversões/crops; esses avisos devem permanecer. O risco residual de privacidade é a identidade/nome de perfil já presente como autor/committer no único commit; ela foi mantida conforme instrução explícita. A decisão de aceitar essa atribuição pública pertence ao proprietário.
 
-Ainda **não apto para tornar público**. Os dados foram removidos da cópia de trabalho, mas permanecem no commit raiz privado remoto e em `main` local. Após aprovação e execução do plano de reescrita, será necessária nova auditoria do histórico remoto antes de qualquer mudança de visibilidade.
+**Quanto aos achados desta auditoria, o repositório está preparado para publicação pública após a decisão do proprietário sobre a visibilidade do nome de autor. A visibilidade permanece privada e não foi alterada.**
